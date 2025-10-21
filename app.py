@@ -7,7 +7,6 @@ import pandas as pd
 import streamlit as st
 import google.generativeai as genai
 from ics import Calendar, Event
-from config import GEMINI_KEY
 import PyPDF2
 from docx import Document
 
@@ -16,8 +15,40 @@ from docx import Document
 # ──────────────────────────────────────────────────────────────
 st.set_page_config(page_title="Career-iFy", page_icon="🧠", layout="wide")
 
+# Get API key - try multiple methods
+GEMINI_KEY = None
+
+# Method 1: Try Streamlit secrets (for Streamlit Cloud)
+try:
+    GEMINI_KEY = st.secrets["GEMINI_API_KEY"]
+except:
+    pass
+
+# Method 2: Try environment variable
 if not GEMINI_KEY:
-    st.error("⚠️ GEMINI_API_KEY not found. Create a .env file with GEMINI_API_KEY=YOUR_KEY and restart.")
+    GEMINI_KEY = os.getenv("GEMINI_API_KEY")
+
+# Method 3: Try loading from .env file (for local development)
+if not GEMINI_KEY:
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+        GEMINI_KEY = os.getenv("GEMINI_API_KEY")
+    except:
+        pass
+
+# Check if we have a key
+if not GEMINI_KEY:
+    st.error("⚠️ GEMINI_API_KEY not found. Please add it to Streamlit Cloud Secrets or create a .env file locally.")
+    st.info("""
+    **For Streamlit Cloud:**
+    1. Go to your app settings
+    2. Click 'Secrets'
+    3. Add: `GEMINI_API_KEY = "your_key_here"`
+    
+    **For Local Development:**
+    Create a `.env` file with: `GEMINI_API_KEY=your_key_here`
+    """)
     st.stop()
 
 genai.configure(api_key=GEMINI_KEY)
