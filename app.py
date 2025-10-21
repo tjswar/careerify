@@ -79,8 +79,14 @@ def fetch_github_repos(username: str) -> list[str]:
     """Fetch public GitHub repositories."""
     import requests
     url = f"https://api.github.com/users/{username}/repos"
+    
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "User-Agent": "Career-iFy-App"
+    }
+    
     try:
-        r = requests.get(url, headers={"Accept": "application/vnd.github+json"}, timeout=20)
+        r = requests.get(url, headers=headers, timeout=20)
         if r.status_code != 200:
             return []
         return [repo.get("name", "") for repo in r.json() if isinstance(repo, dict)]
@@ -372,7 +378,7 @@ if st.button("🚀 Analyze My Career Path", type="primary", use_container_width=
                 github_skills = infer_skills_from_repos(repos)
             st.success(f"✅ Analyzed {len(repos)} GitHub repositories!")
         else:
-            st.warning("⚠️ No public repositories found. Check your username or make repos public.")
+            st.info("ℹ️ Could not fetch GitHub repositories. Continuing with resume analysis only...")
 
     # Step 3 – Merge Skills
     combined_skills = merge_skills(resume_skills, github_skills)
